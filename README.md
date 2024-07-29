@@ -1,7 +1,8 @@
 # BitImageTool
 
 Simple binary image editor that encodes image in string format (each 6 pixels encoded to 6-bit and then to some ASCII character after adding base shift, it's like base64 but more simple)<br>
-It might be used to draw glyphs for tool buttons and store graphics in string properties instead of loading images as resources.
+It might be used to draw glyphs for tool buttons and store graphics in string properties instead of loading images as resources.<br>
+Basecode is base char code that will be added to each 6-bit value. For basecode=32 string char codes will be in range 32-96, for basecode=63 string char codes will be in range 63-127.
 
 ## Build
 
@@ -13,7 +14,7 @@ Draw image
 
 ![01](https://github.com/user-attachments/assets/f72359df-08b3-4eaf-ab4c-c65757e50776)
 
-Copy result string to your app or button property and generate image with code like this C# example
+Copy result string to your app or button property and generate image with code like this: (C# example)
 ```C#
 Bitmap stringToBitmap(Color pen, string s)
 {
@@ -73,7 +74,7 @@ Bitmap stringToBitmap(Color pen, string s)
 ```
 
 this code will generate three images
-[samp01.png]
+![samp01](https://github.com/user-attachments/assets/c32dd933-cb99-4217-8c8a-4ac0de1320be)
 
 
 ## Python example

@@ -11,10 +11,10 @@ Build project with Visual Studio 2022
 
 Draw image
 
-[01.png]
+![01](https://github.com/user-attachments/assets/f72359df-08b3-4eaf-ab4c-c65757e50776)
 
 Copy result string to your app or button property and generate image with code like this C# example
-```
+```C#
 Bitmap stringToBitmap(Color pen, string s)
 {
     byte basecode = s[0];
@@ -29,7 +29,7 @@ Bitmap stringToBitmap(Color pen, string s)
 ```
 
 ## Javascript example
-```
+```javascript
 <html>
     <body style="background-color: #333">
         <canvas class="textimage" image-data="0@@00080060ncWolI6HV0V1PI0H6@V1VigOnm706001000" image-color="0xFF4040FF"></canvas>
@@ -77,7 +77,7 @@ this code will generate three images
 
 
 ## Python example
-```
+```python
 from PIL import Image
 
 s = "0@@00080060ncWolI6HV0V1PI0H6@V1VigOnm706001000"

@@ -9,10 +9,11 @@ namespace BitImageTool
         bool sliderHold = false;
         int sliderSize = 20;
         int tickSize = 4;
-        SolidBrush sliderBrush = new SolidBrush(Color.FromArgb(220, 220, 220));
-        Pen sliderPen = new Pen(Color.FromArgb(200, 200, 200));
-        SolidBrush tickBrush = new SolidBrush(Color.FromArgb(230, 230, 230));
-        SolidBrush trackBrush = new SolidBrush(Color.FromArgb(240, 240, 240));
+        
+        Color sliderBrushColor = Color.FromArgb(220, 220, 220);
+        Color sliderPenColor = Color.FromArgb(200, 200, 200);
+        Color tickBrushColor = Color.FromArgb(230, 230, 230);
+        Color trackBrushColor = Color.FromArgb(240, 240, 240);
 
         public event Action PositionChanged;
 
@@ -60,13 +61,19 @@ namespace BitImageTool
         {
             Graphics g = e.Graphics;
 
-            g.FillRectangle(trackBrush, sliderSize / 2 - tickSize / 2, this.Height / 2 - tickSize / 2, this.Width - sliderSize + tickSize, tickSize);
-            if (drawTicks)
-                for (int c = 0; c <= maximum; c++) g.FillRectangle(tickBrush, sliderSize / 2 + (int)(c * step) - tickSize / 2, this.Height / 2 - tickSize / 2, tickSize, tickSize);
+            using(SolidBrush trackBrush = new SolidBrush(trackBrushColor))
+                g.FillRectangle(trackBrush, sliderSize / 2 - tickSize / 2, this.Height / 2 - tickSize / 2, this.Width - sliderSize + tickSize, tickSize);
+            
+            using(SolidBrush tickBrush = new SolidBrush(tickBrushColor))
+                if (drawTicks)
+                    for (int c = 0; c <= maximum; c++) g.FillRectangle(tickBrush, sliderSize / 2 + (int)(c * step) - tickSize / 2, this.Height / 2 - tickSize / 2, tickSize, tickSize);
 
             Rectangle r = getSliderRect();
-            g.FillRectangle(sliderBrush, r);
-            g.DrawRectangle(sliderPen, r);
+
+            using(SolidBrush sliderBrush = new SolidBrush(sliderBrushColor))
+                g.FillRectangle(sliderBrush, r);
+            using(Pen sliderPen = new Pen(sliderPenColor))
+                g.DrawRectangle(sliderPen, r);
         }
 
         Rectangle getSliderRect()

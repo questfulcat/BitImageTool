@@ -6,7 +6,7 @@ namespace BitImageTool
 {
     public partial class FormMain : Form
     {
-        string appVersion = "0.1";
+        string appVersion = "0.2";
         Icon icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         BitEditor tmpEditor = new BitEditor();
         StringBuilder strout = new StringBuilder();
@@ -14,7 +14,9 @@ namespace BitImageTool
         public FormMain()
         {
             InitializeComponent();
+            
             this.Icon = icon;
+            this.Text += " v" + appVersion;
             tmpEditor.AdjustSizeIfNeeded(64, 64);
 
             bitEditor.ChangedByUser += BitEditor_ChangedByUser;

@@ -5,15 +5,14 @@ namespace BitImageTool
 {
     public partial class BitEditor : Control
     {
-        public Brush BrushSet { get; set; } = Brushes.Blue;
-        public Brush BrushUnset { get; set; } = Brushes.AliceBlue;
+        public Color CellSetColor { get; set; } = Color.Blue;
+        public Color CellUnsetColor { get; set; } = Color.AliceBlue;
 
         public bool DrawBorder { get; set; } = true;
         public bool DrawGrid { get; set; } = true;
-        public Pen PenBorder { get; set; } = Pens.LightBlue;
+        public Color CellBorderColor { get; set; } = Color.LightBlue;
 
         public bool ReadOnly { get; set; } = false;
-                
 
         public bool[,] Field { get; private set; }
 
@@ -100,23 +99,40 @@ namespace BitImageTool
 
         private void BitEditor_Paint(object sender, PaintEventArgs e)
         {
-            var g = e.Graphics;
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            SolidBrush cellSetBrush = null;
+            SolidBrush cellUnsetBrush = null;
+            Pen cellBorderPen = null;
 
-            for (int y = 0; y < fieldHeight; y++)
-                for (int x = 0; x < fieldWidth; x++)
-                {
-                    int px = x * tileSize + 1;
-                    int py = y * tileSize + 1;
-                    var r = new Rectangle(px, py, tileSize, tileSize);
-                    g.FillRectangle(Field[x, y] ? BrushSet : BrushUnset, r);
-                    if (DrawGrid && y > 0) g.DrawLine(PenBorder, px, py, px + tileSize, py);
-                    if (DrawGrid && x > 0) g.DrawLine(PenBorder, px, py, px, py + tileSize);
-                    ///if (DrawGrid) g.DrawRectangle(PenBorder, r);
-                }
-            if (DrawBorder) g.DrawRectangle(PenBorder, 0, 0, Width - 1, Height - 1);
+            try
+            {
+                cellSetBrush = new SolidBrush(CellSetColor);
+                cellUnsetBrush = new SolidBrush(CellUnsetColor);
+                cellBorderPen = new Pen(CellBorderColor);
+
+                var g = e.Graphics;
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+
+                for (int y = 0; y < fieldHeight; y++)
+                    for (int x = 0; x < fieldWidth; x++)
+                    {
+                        int px = x * tileSize + 1;
+                        int py = y * tileSize + 1;
+                        var r = new Rectangle(px, py, tileSize, tileSize);
+                        g.FillRectangle(Field[x, y] ? cellSetBrush : cellUnsetBrush, r);
+                        if (DrawGrid && y > 0) g.DrawLine(cellBorderPen, px, py, px + tileSize, py);
+                        if (DrawGrid && x > 0) g.DrawLine(cellBorderPen, px, py, px, py + tileSize);
+                        ///if (DrawGrid) g.DrawRectangle(cellBorderPen, r);
+                    }
+                if (DrawBorder) g.DrawRectangle(cellBorderPen, 0, 0, Width - 1, Height - 1);
+            }
+            finally
+            {
+                cellSetBrush?.Dispose();
+                cellUnsetBrush?.Dispose();
+                cellBorderPen?.Dispose();
+            }
         }
 
         public delegate bool FillFuncDelegate(int x, int y);

@@ -145,6 +145,7 @@
             // 
             // panelEditor
             // 
+            this.panelEditor.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panelEditor.Controls.Add(this.bitEditorPreview);
             this.panelEditor.Controls.Add(this.bitEditor);
             this.panelEditor.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -155,6 +156,7 @@
             // 
             // panelOutput
             // 
+            this.panelOutput.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panelOutput.Controls.Add(this.textBoxOutput);
             this.panelOutput.Controls.Add(this.panelOutputButtons);
             this.panelOutput.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -166,6 +168,7 @@
             // 
             // textBoxOutput
             // 
+            this.textBoxOutput.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBoxOutput.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBoxOutput.Location = new System.Drawing.Point(33, 3);
             this.textBoxOutput.Multiline = true;
@@ -177,6 +180,7 @@
             // 
             // panelOutputButtons
             // 
+            this.panelOutputButtons.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panelOutputButtons.Controls.Add(this.toolButtonPasteOutput);
             this.panelOutputButtons.Controls.Add(this.toolButtonCopyOutput);
             this.panelOutputButtons.Dock = System.Windows.Forms.DockStyle.Left;
@@ -470,8 +474,7 @@
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(1010, 662);
             this.Controls.Add(this.panelEditor);
             this.Controls.Add(this.panelOutput);

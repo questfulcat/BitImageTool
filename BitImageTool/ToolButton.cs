@@ -11,12 +11,12 @@ namespace BitImageTool
         bool mouseOver = false;
         bool mouseDown = false;
 
-        SolidBrush backBrush = new SolidBrush(Color.FromArgb(0xE0, 0xE0, 0xE0));
-        Pen borderPen = new Pen(Color.FromArgb(0xD0, 0xD0, 0xD0));
-        SolidBrush mouseOverBrush = new SolidBrush(Color.FromArgb(0xF0, 0xF0, 0xF0));
-        SolidBrush mouseDownBrush = new SolidBrush(Color.FromArgb(0xFF, 0xFF, 0xFF));
-        SolidBrush checkedBrush = new SolidBrush(Color.FromArgb(0xC0, 0xC0, 0xFF));
-        SolidBrush mouseOverCheckedBrush = new SolidBrush(Color.FromArgb(0xD0, 0xD0, 0xFF));
+        Color backBrushColor = Color.FromArgb(0xE0, 0xE0, 0xE0);
+        Color borderPenColor = Color.FromArgb(0xD0, 0xD0, 0xD0);
+        Color mouseOverBrushColor = Color.FromArgb(0xF0, 0xF0, 0xF0);
+        Color mouseDownBrushColor = Color.FromArgb(0xFF, 0xFF, 0xFF);
+        Color checkedBrushColor = Color.FromArgb(0xC0, 0xC0, 0xFF);
+        Color mouseOverCheckedBrushColor = Color.FromArgb(0xD0, 0xD0, 0xFF);
 
 
         public ToolButton() : base()
@@ -27,6 +27,11 @@ namespace BitImageTool
             this.MouseDown += (sender, e) => { mouseDown = true; check(); Refresh(); };
             this.MouseUp += (sender, e) => { mouseDown = false; Refresh(); };
             Refresh();
+        }
+
+        ~ToolButton()
+        {
+            encodedImageBitmap?.Dispose();
         }
 
         //Bitmap stringToBitmap(Color pen, string s)
@@ -60,7 +65,7 @@ namespace BitImageTool
                 var data = new Color[h, w];
                 for (int y = 0; y < h; y++)
                     for (int x = 0; x < w; x++)
-                        data[y, x] = ((s[3 + (y * w + x) / 6] - basecode) & (1 << (y * w + x) % 6)) > 0 ? pen : Color.Transparent; 
+                        data[y, x] = ((s[3 + (y * w + x) / 6] - basecode) & (1 << (y * w + x) % 6)) > 0 ? pen : Color.Transparent;
 
                 // antialiasing
                 Bitmap bmp = new Bitmap(w, h);
@@ -84,26 +89,36 @@ namespace BitImageTool
 
         private void ToolButton_Paint(object sender, PaintEventArgs e)
         {
-            var g = e.Graphics;
+            SolidBrush brush = null;
+           
+            try
+            {
+                var g = e.Graphics;
 
-            SolidBrush brush;
-            if (mouseDown) brush = mouseDownBrush;
-            else if (isChecked && mouseOver && buttonType != ToolButtonType.Radio) brush = mouseOverCheckedBrush;
-            else if (IsChecked) brush = checkedBrush;
-            else if (mouseOver) brush = mouseOverBrush;
-            else brush = backBrush;
+                if (mouseDown) brush = new SolidBrush(mouseDownBrushColor);
+                else if (isChecked && mouseOver && buttonType != ToolButtonType.Radio) brush = new SolidBrush(mouseOverCheckedBrushColor);
+                else if (IsChecked) brush = new SolidBrush(checkedBrushColor);
+                else if (mouseOver) brush = new SolidBrush(mouseOverBrushColor);
+                else brush = new SolidBrush(backBrushColor);
 
-            g.FillRectangle(brush, 0, 0, this.Width, this.Height);
-            
-            SizeF textSize = g.MeasureString(text, Font);
-            g.DrawString(text, Font, new SolidBrush(this.ForeColor), (Width - textSize.Width) / 2, (Height - textSize.Height) / 2);
+                g.FillRectangle(brush, 0, 0, this.Width, this.Height);
 
-            if (encodedImageBitmap == null && !string.IsNullOrWhiteSpace(EncodedImage))
-                encodedImageBitmap = stringToBitmap(EncodedImagePen, EncodedImage);
+                SizeF textSize = g.MeasureString(text, Font);
+                using (Brush br = new SolidBrush(this.ForeColor))
+                    g.DrawString(text, Font, br, (Width - textSize.Width) / 2, (Height - textSize.Height) / 2);
 
-            if (encodedImageBitmap != null) g.DrawImage(encodedImageBitmap, EncodedImageLocation);
+                if (encodedImageBitmap == null && !string.IsNullOrWhiteSpace(EncodedImage))
+                    encodedImageBitmap = stringToBitmap(EncodedImagePen, EncodedImage);
 
-            g.DrawRectangle(borderPen, 0, 0, this.Width - 1, this.Height - 1);
+                if (encodedImageBitmap != null) g.DrawImage(encodedImageBitmap, EncodedImageLocation);
+
+                using (Pen borderPen = new Pen(borderPenColor))
+                    g.DrawRectangle(borderPen, 0, 0, this.Width - 1, this.Height - 1);
+            }
+            finally
+            {
+                brush?.Dispose();
+            }
         }
 
         private void check()
@@ -149,14 +164,26 @@ namespace BitImageTool
         public string EncodedImage
         {
             get { return encodedImage; }
-            set { encodedImage = value; encodedImageBitmap = null; Refresh(); }
+            set
+            {
+                encodedImage = value;
+                encodedImageBitmap?.Dispose();
+                encodedImageBitmap = null;
+                Refresh();
+            }
         }
 
         Color encodedImagePen;
         public Color EncodedImagePen
         {
             get { return encodedImagePen; }
-            set { encodedImagePen = value; encodedImageBitmap = null; Refresh(); }
+            set
+            {
+                encodedImagePen = value;
+                encodedImageBitmap?.Dispose();
+                encodedImageBitmap = null;
+                Refresh();
+            }
         }
         public Point EncodedImageLocation { get; set; }
 

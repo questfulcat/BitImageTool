@@ -8,6 +8,11 @@ Basecode is base char code that will be added to each 6-bit value. For basecode=
 
 Build project with Visual Studio 2022
 
+## Compatibility
+
+- Windows (.NET Framework 4.0+)
+- Linux (mono)
+
 ## How to use
 
 Draw image
@@ -97,3 +102,38 @@ for y in range(w):
 img.save('test.png', 'PNG')
 ```
 
+## Antialiasing
+Improved decoder with antialising option on C#
+
+```C#
+// decoder with antialiasing as option
+Bitmap stringToBitmap(Color pen, string s, bool antialiasing)
+{
+    Color ppart = Color.FromArgb(pen.A / 4, pen.R, pen.G, pen.B);
+    int basecode = s[0];
+    int w = s[1] - basecode;
+    int h = s[2] - basecode;
+    var data = new Color[h, w];
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+            data[y, x] = ((s[3 + (y * w + x) / 6] - basecode) & (1 << (y * w + x) % 6)) > 0 ? pen : Color.Transparent; 
+
+    // antialiasing and image fill
+    Bitmap bmp = new Bitmap(w, h);
+    for (int y = 1; y < h - 1; y++)
+        for (int x = 1; x < w - 1; x++)
+        {
+            if (antialiasing)
+            {
+                int q = 0;
+                if (data[y - 1, x] == pen) q++;
+                if (data[y + 1, x] == pen) q++;
+                if (data[y, x - 1] == pen) q++;
+                if (data[y, x + 1] == pen) q++;
+                if ((q == 2 || q == 3) && data[y, x] == Color.Transparent) data[y, x] = ppart;
+            }
+            bmp.SetPixel(x, y, data[y, x]);
+        }
+    return bmp;
+}
+```

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -130,6 +131,7 @@ namespace BitImageTool
                 foreach (var c in Parent.Controls) if (c is ToolButton tb && tb.ButtonType == ToolButtonType.Radio && tb.RadioGroup == this.RadioGroup) tb.IsChecked = false;
                 isChecked = true;
             }
+            CheckedChanged?.Invoke(isChecked);
         }
 
 
@@ -141,12 +143,13 @@ namespace BitImageTool
             set { buttonType = value; Refresh(); }
         }
 
+        public event Action<bool> CheckedChanged;
         
         bool isChecked = false;
         public bool IsChecked
         {
             get { return isChecked; }
-            set { isChecked = value; Refresh(); }
+            set { isChecked = value; CheckedChanged?.Invoke(isChecked); Refresh(); }
         }
 
         public int RadioGroup { get; set; }

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace BitImageTool
@@ -10,7 +11,7 @@ namespace BitImageTool
 
         public bool DrawBorder { get; set; } = true;
         public bool DrawGrid { get; set; } = true;
-        public Color CellBorderColor { get; set; } = Color.LightBlue;
+        public Color CellBorderColor { get; set; } = Color.FromArgb(120, 180, 180, 180);
 
         public bool ReadOnly { get; set; } = false;
 
@@ -97,17 +98,19 @@ namespace BitImageTool
             mouseHold = false;
         }
 
+        public Action<long> DrawPaintPerformance { get; set; }
         private void BitEditor_Paint(object sender, PaintEventArgs e)
         {
             SolidBrush cellSetBrush = null;
             SolidBrush cellUnsetBrush = null;
             Pen cellBorderPen = null;
 
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 cellSetBrush = new SolidBrush(CellSetColor);
                 cellUnsetBrush = new SolidBrush(CellUnsetColor);
-                cellBorderPen = new Pen(CellBorderColor);
+                cellBorderPen = new Pen(CellBorderColor, 1);
 
                 var g = e.Graphics;
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
@@ -121,10 +124,25 @@ namespace BitImageTool
                         int py = y * tileSize + 1;
                         var r = new Rectangle(px, py, tileSize, tileSize);
                         g.FillRectangle(Field[x, y] ? cellSetBrush : cellUnsetBrush, r);
-                        if (DrawGrid && y > 0) g.DrawLine(cellBorderPen, px, py, px + tileSize, py);
-                        if (DrawGrid && x > 0) g.DrawLine(cellBorderPen, px, py, px, py + tileSize);
-                        ///if (DrawGrid) g.DrawRectangle(cellBorderPen, r);
+                        //if (DrawGrid && y > 0) g.DrawLine(cellBorderPen, px, py, px + tileSize, py);
+                        //if (DrawGrid && x > 0) g.DrawLine(cellBorderPen, px, py, px, py + tileSize);
+                        //if (DrawGrid) g.DrawRectangle(cellBorderPen, r);
                     }
+                if (DrawGrid) // optimized grid drawing
+                {
+                    for (int x = 1; x < fieldWidth; x++)
+                    {
+                        int px = x * tileSize + 1;
+                        g.DrawLine(cellBorderPen, px, 0, px, Height - 1);
+                        //g.FillRectangle(cellSetBrush, px, 0, 1, Height);
+                    }
+                    for (int y = 1; y < fieldHeight; y++)
+                    {
+                        int py = y * tileSize + 1;
+                        g.DrawLine(cellBorderPen, 0, py, Width - 1, py);
+                        //g.FillRectangle(cellSetBrush, 0, py, Width, 1);
+                    }
+                }
                 if (DrawBorder) g.DrawRectangle(cellBorderPen, 0, 0, Width - 1, Height - 1);
             }
             finally
@@ -133,6 +151,8 @@ namespace BitImageTool
                 cellUnsetBrush?.Dispose();
                 cellBorderPen?.Dispose();
             }
+            watch.Stop();
+            DrawPaintPerformance?.Invoke(watch.ElapsedTicks);
         }
 
         public delegate bool FillFuncDelegate(int x, int y);

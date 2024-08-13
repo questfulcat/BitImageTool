@@ -6,10 +6,11 @@ namespace BitImageTool
 {
     public partial class FormMain : Form
     {
-        string appVersion = "0.2";
+        string appVersion = "0.3";
         Icon icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         BitEditor tmpEditor = new BitEditor();
         StringBuilder strout = new StringBuilder();
+        Timer outputUpdateTimer = new Timer() { Interval = 500 };
 
         public FormMain()
         {
@@ -21,9 +22,17 @@ namespace BitImageTool
 
             bitEditor.ChangedByUser += BitEditor_ChangedByUser;
             bitEditorPreview.SizeChanged += (sender, e) => bitEditor.Top = bitEditorPreview.Top + bitEditorPreview.Height + 16;
-
+            
             sliderWidthOrHeight_PositionChanged();
             sliderBaseCode_PositionChanged();
+
+            outputUpdateTimer.Tick += (s, e) => { outputUpdateTimer.Stop(); imageToString(); };
+            
+            //sliderTileSize.Position = 5;
+            //sliderWidth.Position = 56;
+            //sliderHeight.Position = 56;
+            //bitEditor.DrawPaintPerformance = (t) => this.Text = t.ToString();
+            //this.WindowState = FormWindowState.Maximized;
         }
 
         void updateEditors()
@@ -96,11 +105,17 @@ namespace BitImageTool
         //    catch { return null; }
         //}
 
+        private void outputUpdateNeeded()
+        {
+            outputUpdateTimer.Stop();
+            outputUpdateTimer.Start();
+        }
+
         private void BitEditor_ChangedByUser(object sender, int x, int y, bool value)
         {
             bitEditorPreview.Field[x, y] = value;
             bitEditorPreview.Invalidate();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void sliderTileSize_PositionChanged()
@@ -124,7 +139,7 @@ namespace BitImageTool
             labelWidth.Text = $"Width: {sliderWidth.Position + 8}";
             labelHeight.Text = $"Height: {sliderHeight.Position + 8}";
 
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void textBoxOutput_KeyPress(object sender, KeyPressEventArgs e)
@@ -136,49 +151,49 @@ namespace BitImageTool
         {
             bitEditor.ForEach((x, y) => false);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonFill_MouseDown(object sender, MouseEventArgs e)
         {
             bitEditor.ForEach((x, y) => true);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonInvert_MouseDown(object sender, MouseEventArgs e)
         {
             bitEditor.ForEach((x, y) => !bitEditor[x, y]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonFlipHoriz_MouseDown(object sender, MouseEventArgs e)
         {
             bitEditor.CloneForEach((x, y) => bitEditor[bitEditor.FieldWidth - x - 1, y]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonFlipVert_MouseDown(object sender, MouseEventArgs e)
         {
             bitEditor.CloneForEach((x, y) => bitEditor[x, bitEditor.FieldHeight - y - 1]);
             updateEditors();
-            imageToString();
-        }
-
-        private void toolButtonRotateCW_MouseDown(object sender, MouseEventArgs e)
-        {
-            bitEditor.CloneForEach((x, y) => bitEditor[bitEditor.FieldWidth - y - 1, x]);
-            updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonRotateCCW_MouseDown(object sender, MouseEventArgs e)
         {
+            bitEditor.CloneForEach((x, y) => bitEditor[bitEditor.FieldWidth - y - 1, x]);
+            updateEditors();
+            outputUpdateNeeded();
+        }
+
+        private void toolButtonRotateCW_MouseDown(object sender, MouseEventArgs e)
+        {
             bitEditor.CloneForEach((x, y) => bitEditor[y, bitEditor.FieldWidth - x - 1]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonShiftUp_MouseDown(object sender, MouseEventArgs e)
@@ -187,7 +202,7 @@ namespace BitImageTool
                 bitEditor.CloneForEach((x, y) => (y == bitEditor.FieldHeight - 1) ? bitEditor[x, 0] : bitEditor[x, y + 1]);
             else bitEditor.CloneForEach((x, y) => bitEditor[x, y + 1]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonShiftDown_MouseDown(object sender, MouseEventArgs e)
@@ -196,7 +211,7 @@ namespace BitImageTool
                 bitEditor.CloneForEach((x, y) => (y == 0) ? bitEditor[x, bitEditor.FieldHeight - 1] : bitEditor[x, y - 1]);
             else bitEditor.CloneForEach((x, y) => bitEditor[x, y - 1]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonShiftLeft_MouseDown(object sender, MouseEventArgs e)
@@ -205,7 +220,7 @@ namespace BitImageTool
                 bitEditor.CloneForEach((x, y) => (x == bitEditor.FieldWidth - 1) ? bitEditor[0, y] : bitEditor[x + 1, y]);
             else bitEditor.CloneForEach((x, y) => bitEditor[x + 1, y]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void toolButtonShiftRight_MouseDown(object sender, MouseEventArgs e)
@@ -214,7 +229,7 @@ namespace BitImageTool
                 bitEditor.CloneForEach((x, y) => (x == 0) ? bitEditor[bitEditor.FieldWidth - 1, y] : bitEditor[x - 1, y]);
             else bitEditor.CloneForEach((x, y) => bitEditor[x - 1, y]);
             updateEditors();
-            imageToString();
+            outputUpdateNeeded();
         }
 
         private void sliderBaseCode_PositionChanged()
@@ -237,6 +252,12 @@ namespace BitImageTool
         private void toolButtonAbout_MouseUp(object sender, MouseEventArgs e)
         {
             MessageBox.Show($"Version {appVersion}\r\nMIT License\r\ndeveloper: questfulcat\r\nhttps://github.com/questfulcat/BitImageTool", "BitImageTool", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void toolButtonDrawGrid_CheckedChanged(bool state)
+        {
+            bitEditor.DrawGrid = state;
+            bitEditor.Refresh();
         }
     }
 }
